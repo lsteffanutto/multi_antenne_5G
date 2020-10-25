@@ -5,23 +5,31 @@ clc;
 % P_M=zeros(5,1);
 M=5;        %capteurs  
 N=500;       %nb_echantillons
-sigma_s=1;  %energie signal recu
+sigma_s1=1;  %energie signal recu
+sigma_s2=1; 
+sigma_s = [ sigma_s1 0; 0 sigma_s2];
 sigma_v=0.1;%energie du bruit
-theta0=40*(pi/180);      %degrÈ ÈlÈvation de la source
-K=1;
+theta1= 40; %en degr√©
+theta2 = 45;
+theta= [theta1 theta2]*(pi/180);      %degr√© √©l√©vation de la source
+K=length(theta);
 
-%% Filtrage Spatial Capon 1 source
+%% Filtrage Spatial Capon 2 sources
 
-test=0;
+test=1;
 if test==1  % N=1 echantillon
 
 
 v = sqrt(sigma_v/2)*(randn(M,1)+1i*randn(M,1)); % [5x1]      % bruit pour chaque capteur
-s = sqrt(sigma_v/2)*(randn(K,1)+1i*randn(K,1));               % [1x1]      % signal recu
+s = sqrt(diag(sigma_s/2)).*(randn(K,1)+1i*randn(K,1));               % [2x1]      % signal recu
 A=zeros(M,1);                 % [5x1]      % direction arrivee de la source determinee par chaque capteur
 
-for i =1:M
-    A(i,1) = exp(-1i*pi*(i-1)*sin(theta0));
+for j =1:K
+    
+    for i =1:M
+        A(i,K) = exp(-1i*pi*(i-1)*sin(theta(1,K)));
+    end
+
 end
 
 y = A*s + v;
@@ -29,18 +37,20 @@ end
 
 
 % N=500 echantillons
-V_n = sqrt(sigma_v/2)*(randn(M,N)+1i*randn(M,N));% [5x500]    % bruit pour chaque capteur, pour chaque Èchantillon
-S_n = sqrt(sigma_s/2)*(randn(K,N)+1i*randn(K,N));              % [1x500]    % signal recu de la source, pour chaque echantillon
+V_n = sqrt(sigma_v/2)*(randn(M,N)+1i*randn(M,N));% [5x500]    % bruit pour chaque capteur, pour chaque √©chantillon
+S_n = sqrt(diag(sigma_s/2)).*(randn(K,N)+1i*randn(K,N));              % [1x500]    % signal recu de la source, pour chaque echantillon
 % A=zeros(5,1);                  % [5x1]      % direction arrivee de la source determinee par chaque capteur pour un echantillon
 A_n = zeros(M,N);              % [5x500]    % % direction arrivee de la source determinee par chaque capteur pour chaque echantillon
 
 for j=1:N
     
-    A=zeros(M,1);
-    for i=1:M
-        A(i,1) = exp(-1i*pi*(i-1)*sin(theta0));
+    for k =1:K
+        A=zeros(M,1);
+        for i=1:M
+            A(i,1) = exp(-1i*pi*(i-1)*sin(theta(1,k)));
+        end
+        A_n(:,j) = A; % on concatene l'observation des 5 capteur pour chaque echantillon
     end
-    A_n(:,j) = A; % on concatene l'observation des 5 capteur pour chaque echantillon
         
 end
 
@@ -48,7 +58,7 @@ Y_n = A_n*S_n' + V_n;
 
 xx=1:N;
 
-disp=0;
+disp=1;
 if disp==1   
 figure,
 
@@ -58,7 +68,7 @@ subplot(5,1,3);plot(xx,Y_n(3,:));title('y3');
 subplot(5,1,4);plot(xx,Y_n(4,:));title('y4');
 subplot(5,1,5);plot(xx,Y_n(5,:));title('y5');
 
-suptitle('signal reÁu par chaque capteur M');
+suptitle('signal re√ßu par chaque capteur M');
 end
 
 %% Filtre de Capon
@@ -67,7 +77,7 @@ end
 % on l'a pas donc il faut l'estimer
 % on l'estime avec les N=500 samples de y, dans chaque colonnes de Y_n
 % R_chap [5x5]
-% R_chap = (1/N)*sum(Y_n*conj(Y_n)'); % * X' *=conj transposÈ
+% R_chap = (1/N)*sum(Y_n*conj(Y_n)'); % * X' *=conj transpos√©
 
 R_chap = (1/N)*(Y_n*Y_n.') ; % Dans cours X* = X.' dans matlab
 R_chap_inv = inv(R_chap);
@@ -106,7 +116,7 @@ hold on
 plot( angle_radian*180/pi,abs(P));
 xlabel('\theta (\circ)');
 ylabel('P(\theta)','rotation',0);
-%Spectre de puissance estimÈ en sortie du filtre de Capon
+%Spectre de puissance estim√© en sortie du filtre de Capon
 title('P(\theta) pour \theta = 40\circ et M = 5 capteurs');
 % legend('M=5','M=20','M=50','M=100');
 

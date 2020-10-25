@@ -1,0 +1,66 @@
+II) Localisation par filtrage Spatial
+
+1.
+Filtrage spatial = Beamforming = combiner linéairement l'output de chaque capteur de manière à focaliser le réseau de capteur dans une direction donnée (la direction d'arriver de la source qui nous intéresse). Pour réaliser cela on pondère le signal reçu par chaque capteur, avec un filtre spatial w dont chaque élément diffère en fonction du capteur sur le quel il est appliqué. Le but est d'éliminer la contribution de la source dans la direction qui ne m'intéresse pas. (Schéma p.42)
+
+La méthode de Capon consiste à minimiser l'énergie total du signal en sortie du filtre. Cette méthode présente un biais mais + de puissance
+
+min ma bite p.54
+
+Théorie bien:
+https://perso.telecom-paristech.fr/rioul/liesse/2012liesse4/YG-slides.pdf
+
+3.
+% On a besoin de R autocorrelation du signal recu
+% on l'a pas donc il faut l'estimer
+% on l'estime avec les N=500 samples de y, dans chaque colonnes de Y_n
+
+P.25 pdf trouvé
+
+minimise w(teta)R_yyw(teta)w(teta) ou espérance cours p.54
+, sous contrainte w(teta)hermitiennea(teta) = 1
+
+fonction localisation, spectre de puissance TP sans le chapeau
+
+et nous on a pas R donc on l'estime et on le remplace et c bon
+
+4.Pour séparer les 2 sources 40/45 il faut au moins M=15 capteurs
+
+5. énergie estimé sur le 2eme angle d'arrivé a une amplitude + élevé
+
+6. + bruit + biaise l'énergie estimé angles d'arrivé, quand variance du bruit = variance du signal on ne détecte + la deuxieme source
+
+
+III) Please don't stop the MUUUSIIICCCC MUUUSIIIICCCC
+
+1.
+=> Principe :
+
+Projetter les direction d'arrivée sur le sous-espace bruit, et je regarde l'énergie de la projection.
+
+=> Hypothèses:
+- M > K = + de capteurs que de sources
+- rang de gamma = K => Gamma = matrice de covariance du signal source, est de rang plein
+
+Algo:
+- on a pas R donc on l'estime
+- on diagonalise R pour obtenir les eigenvalues dont les K plus grandes correspondent aux K sources
+- le reste des eigenvalues = variance = bruit
+- ensuite du projette les direction d'arrivéesur la base du bruit de K+1 à M
+- On a pas la projectio nsur SES et SEB donc on va les estimer
+p.96 cours
+
+R_chap = U_chap lambda_chap U_chap*
+
+2.
+On print les valeurs propres, et on regarde le nombre dont la valeur dépasse la variance du bruit , VP en fonctions de leur position dans la matrice diagonale
+
+3. Pseudo spectre estimé voir p.7 du doc ci-dessous
+http://www.jpier.org/PIERC/pierc95/16.19051006.pdf
+
+M=10 min pour séparer les 2 sources
+
+
+4.MUSIC moins bruit mais spectre puissance baisse puissance signal
+
+
