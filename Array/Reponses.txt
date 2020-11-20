@@ -64,3 +64,12 @@ M=10 min pour séparer les 2 sources
 4.MUSIC moins bruit mais spectre puissance baisse puissance signal
 
 
+Pour le TP de traitement d'antenne, vous pouvez déposer vos compte-rendus  + codes matlab sous moodle à l'adresse :
+
+https://moodle.bordeaux-inp.fr/mod/assign/view.php?id=70723
+
+Même si vous êtes en binôme, veillez à bien faire un dépôt chacun. Pour rappel, la deadline est fixée au vendredi 30 octobre 22h.
+
+P.S. Pour la dernière partie du TP, pour ceux qui se posent la question, il y a 6 sources à détecter ...
+
+

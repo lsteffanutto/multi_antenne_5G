@@ -106,7 +106,7 @@ plot( angle_radian*180/pi,abs(P));
 xlabel('\theta (\circ)');
 ylabel('P(\theta)','rotation',0);
 %Spectre de puissance estimé en sortie du filtre de Capon
-title('P(\theta) pour \theta = 40\circ et M = 5 capteurs');
+title("P(\theta) pour \theta = 40\circ et M = "+M+" capteurs");
 % legend('M=5','M=20','M=50','M=100');
 
 % https://fr.mathworks.com/matlabcentral/answers/298499-direction-of-arrival-estimation-of-multiple-signals-using-capon-mvdr-beamformer

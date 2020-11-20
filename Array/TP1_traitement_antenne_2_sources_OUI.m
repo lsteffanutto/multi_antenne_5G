@@ -6,7 +6,7 @@ clc;
 M=20 ;       %capteurs  
 N=500;       %nb_echantillons
 sigma_s1=1;  %energie signal recu
-sigma_s2=1; 
+sigma_s2=10; 
 sigma_s = [ sigma_s1 sigma_s2];
 % sigma_v=5;%energie du bruit
 % sigma_v_tab = [0.1 1 3 5 10 ];

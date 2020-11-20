@@ -11,10 +11,10 @@ sigma_s2=1;
 sigma_s = [ sigma_s1 sigma_s2];
 % sigma_v=5;%energie du bruit
 % sigma_v_tab = [0.1 1 3 5 10 ];
-sigma_v_tab = [0.1 1 3 ];
+sigma_v_tab = [0.1 1 3 5 10];
 nb_sigma=length(sigma_v_tab);
 % nb_sigma=1;
-
+% sigma_v_tab=3
 for variance = 1:nb_sigma
 
 sigma_v=sigma_v_tab(variance);%energie du bruit
@@ -100,7 +100,7 @@ PI_chap_SES = (U(1:K,1:K)*U(1:K,1:K)');                          %sous-espace SI
 PI_chap_bar_SEB = (U(K+1:end,K+1:end)*U(K+1:end,K+1:end)');      %sous-espace BRUIT  (projette orthogonale)
 
 U_Kplus1_to_M_chap = U(:,K+1:end); %vecteur propre du SEB       [MxM-K]
-U_1_to_K_chap = U(:,1:K); %vp correspondants au SEB    [MxK]
+U_1_to_K_chap = U(:,1:K); %vp correspondants au SES    [MxK]
 
 [l,c]=size(D);
 vp = zeros(M,M);
@@ -119,7 +119,7 @@ sigma_chap = (1/(M-K))*( sum(plot_vp((K+1):M))); %on estime le seuil
 
 disp_vp=0;
 if disp_vp==1
-    
+    figure,
     scatter(1:nb_vp,plot_vp','+','LineWidth',1.5);
     title('Valeur des VP estimés en fonction de leur index')
     xlabel('Index de la VP');
@@ -136,7 +136,6 @@ end
 % w_teta = [];
 % W_cap=[]; %[5x181]
 d_teta=[];     %E_estime_sortie_filtre % [1x181] = une pour chaque angle
-d=0;
 P=[];
 for teta=-pi/2:pi/180:pi/2 % on parcourt tous les angles
     
@@ -147,27 +146,45 @@ for teta=-pi/2:pi/180:pi/2 % on parcourt tous les angles
     a_teta_fixe_M_capteurs_conj = zeros(1,M);
     a_teta_fixe_M_capteurs_conj = a_teta_fixe_M_capteurs'; % [5x1]* = [5x1].' = [1x5]
             
-%     d = a_teta_fixe_M_capteurs_conj*U_Kplus1_to_M_chap;
-%     
+    d = sum(abs(a_teta_fixe_M_capteurs_conj*U(:,K+1:M))).^2;
+%   d=0;
+
 %     res = sum(abs(d).^2);
+    res = d;
 %     
-%     d_teta = [d_teta res];
+    d_teta = [d_teta res];
     
-    p_teta = 1/(a_teta_fixe_M_capteurs_conj*U_1_to_K_chap*U_1_to_K_chap'*a_teta_fixe_M_capteurs);
+%     p_teta = 1/(a_teta_fixe_M_capteurs_conj*U_1_to_K_chap*U_1_to_K_chap'*a_teta_fixe_M_capteurs);
+%     p_teta = 1/(a_teta_fixe_M_capteurs_conj*R_chap^(-1)*a_teta_fixe_M_capteurs);
+
     %Pseudo-spectre 
-    P = [ P p_teta ];
+%     P = [ P p_teta ];
+       
+ 
     
 end
 
-angle_radian = -pi/2:pi/180:pi/2;
 
-% figure,
+angle_radian = -pi/2:pi/180:pi/2;
 hold on
-plot( angle_radian*180/pi,abs(P)/(N*M),'LineWidth',1.5);
+plot(angle_radian*180/pi,d_teta,'LineWidth',1.5);
 xlabel('\theta (\circ)');
-ylabel('P(\theta)','rotation',0);
-title("P(\theta) estimé MUSIC pour \theta_1= "+theta1+"\circ, \theta_2= "+theta2+"\circ, M = " + M +" capteurs");
-% legend("Capon M=20","MUSIC M="+M);
+ylabel('d(\theta)','rotation',0);
+title("d(\theta) estimé pour \theta_1= "+theta1+"\circ, \theta_2= "+theta2+"\circ, M = " + M +" capteurs");
+legend("\sigma_v="+sigma_v_tab(1),"\sigma_v="+sigma_v_tab(2),"\sigma_v="+sigma_v_tab(3),"\sigma_v="+sigma_v_tab(4),"\sigma_v="+sigma_v_tab(5));
+
+
+disp=0;
+
+if disp ==1
+% figure,
+    hold on
+    plot( angle_radian*180/pi,abs(P)/(N*M),'LineWidth',1.5);
+    xlabel('\theta (\circ)');
+    ylabel('P(\theta)','rotation',0);
+    title("P(\theta) estimé MUSIC pour \theta_1= "+theta1+"\circ, \theta_2= "+theta2+"\circ, M = " + M +" capteurs");
+    % legend("Capon M=20","MUSIC M="+M);
+end
 
 if nb_sigma ==3
     legend("MUSIC M="+M);
@@ -215,3 +232,32 @@ end
 
 % scatterplot(abs(P(locs)))
 % angle_source = locs*180/pi
+
+angle_radian = -pi/2:pi/180:pi/2;
+figure, plot(angle_radian*180/pi,d_teta);
+xlabel('\theta (\circ)');
+ylabel('d(\theta)','rotation',0);
+title("d(\theta) estimé pour \theta_1= "+theta1+"\circ, \theta_2= "+theta2+"\circ, M = " + M +" capteurs");
+
+%% leur technique
+% R=zeros(M);
+% axe_theta=-90:0.1:90;
+% a_theta=zeros(M,length(axe_theta));
+% 
+% for theta=axe_theta
+%     for source=1:M
+%         a_theta(source,k)=exp(-1i*pi*(source-1)*sin(deg2rad(theta)));
+% %         P(1,k)=1/(a_theta(:,k)'*R^(-1)*a_theta(:,k));
+%     end
+%     k=k+1;
+% end
+% 
+% 
+% [U,Lambda]=eig(R_chap);
+% dd=0;
+% for ii=K+1:M
+%     dd=dd+abs(a_theta'*U(:,ii)).^2;
+% end
+% figure, plot(axe_theta,dd(2:end)');
+
+
