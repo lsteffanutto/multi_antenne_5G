@@ -8,16 +8,16 @@ clear all; close all; clc; beep off;
 %n = longueur du msg encodé
 
 R=1;
-bit_par_pqt=2048
-pqt_par_trame = 1; % Nombre de paquets par trame
-K = pqt_par_trame*bit_par_pqt; % Nombre de bits de message par trame
+% bit_par_pqt=2048;
+% pqt_par_trame = 1; % Nombre de paquets par trame
+% K = pqt_par_trame*bit_par_pqt; % Nombre de bits de message par trame
 % N = K/R; % Nombre de bits codés par trame (codée)
 
 M_code = 4; % Modulation BPSK <=> 2 symboles
 phi0 = 0; % Offset de phase our la BPSK
 
 EbN0dB_min  = -4; % Minimum de EbN0
-EbN0dB_max  = 10; % Maximum de EbN0
+EbN0dB_max  = 12; % Maximum de EbN0
 EbN0dB_step = 1;% Pas de EbN0
 
 nbr_erreur  = 100;  % Nombre d'erreurs à observer avant de calculer un BER
@@ -80,7 +80,7 @@ fprintf(      '|------------|---------------|------------|----------|-----------
 
 M=2; %Nombre d'antennes de réception
 N=2; %Nombre d'antennes d'émission
-L=2; %Nombre de symboles transmis
+L=1; %Nombre de symboles transmis
 
 H = randn(M,N) + 1i*randn(M,N); % [MxN] % Constante, contient les h_m_n = gain complexe entre n_eme antenne emission et m_eme antenne reception
 % V = sqrt(sigma2/2) *((randn(M,L) + 1i*randn(M,L)));
@@ -107,9 +107,10 @@ for i_snr = 1:length(EbN0dB)
         n_frame = n_frame + 1;
         
         %% Emetteur
-        tx_tic = tic;                 % Mesure du débit d'encodage
+        tx_tic = tic; % Mesure du débit d'encodage
+     
         symboles_x_all = randi([0 1], 1, N*L) + 1i * randi([0 1], 1, N*L); %2 symboles aléatoires déjà modulés par mes soins
-        
+
         X = reshape(symboles_x_all,N,L); % [NxL] %Mot de code avec les symboles répartis verticalement
         %krari c'est encodé verticale à la V-BLAST
         
@@ -131,8 +132,14 @@ for i_snr = 1:length(EbN0dB)
 
         %Mon decodeur fait tout: demodulation et decision il parle 0 chinois
         
-        rec_b=decode_ML(Y,H,X);
-        rec_b=complex(rec_b); %pcq des fois en décodant mal il oublie de préciser partie imaginaire nulle
+        % ML
+%         rec_b=decode_ML(Y,H,X);
+%         rec_b = decode_ML_mieux(Y,H,X); % !!! Marche pour toute taille de L, même L=1 !!!
+        
+        % ZF
+        [X_dec] = decode_ZF(H, Y);
+
+        rec_b=complex(X_dec); %pcq des fois en décodant mal il oublie de préciser partie imaginaire nulle
         
         if verif==1
             decode_success=0;
@@ -209,7 +216,7 @@ xlabel('$\frac{E_b}{N_0}$ en dB','Interpreter', 'latex', 'FontSize',14)
 ylabel('$P_{error}$','Interpreter', 'latex', 'FontSize',14)
 title("ML decoder M="+M+"; N="+N+"; L="+L);
 
-save('V-Blast','EbN0dB','ber')
+save('ZF','EbN0dB','ber')
 
 
 

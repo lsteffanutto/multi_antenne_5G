@@ -1,5 +1,5 @@
 function [Alphabet_X] = generer_Alphabet_QPSK_X(X)
-
+% Genere tous les mots de code possible à pa
 [N,L]=size(X);
 
 nb_symboles=N*L;
