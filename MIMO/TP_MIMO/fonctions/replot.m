@@ -15,6 +15,11 @@ ylim([1e-6 1])
 grid on
 xlabel('$\frac{E_b}{N_0}$ en dB','Interpreter', 'latex', 'FontSize',14)
 ylabel('Pe','Interpreter', 'latex', 'FontSize',14)
-title('Probabilité erreur de chaque décodeur');
 
-legend('ML','ZF')
+M=2;
+N=2;
+L=1;
+
+title("Pe par decodeur avec M="+M+"; N="+N+"; L="+L);
+
+legend('ML','ZF','MMSE','SIC');

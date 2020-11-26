@@ -1,13 +1,15 @@
 clear all; close all; clc; beep off;
 
+%% PROGRAMME POUR TESTER LES DIFFS DECODEURS AVEC ET SANS BRUIT
+
 %% VAR
 M=2; %Nombre d'antennes de réception
 N=2; %Nombre d'antennes d'émission
 L=1; %Nombre de symboles transmis
 
-ML=0;
-ZF=0;
-MMSE=0;
+ML=1;
+ZF=1;
+MMSE=1;
 SIC=1;
 
 sigma2=0;
@@ -37,28 +39,28 @@ if ML==1
 % [X_dec] = decode_ML(Y,H,X);
 [X_dec] = decode_ML_mieux(Y,H,X) % !!! Marche pour toute taille de L, même L=1 !!!
 %Verif bon decodage
-decode_success=verif_decodage(X,X_dec)
+decode_success_ML=verif_decodage(X,X_dec)
 end
 %%%%%%%%%%%%%%%%%%
 
 % ZF %%%%%%%%%%%%%
 if ZF==1
 [X_dec] = decode_ZF(H, Y)
-decode_success=verif_decodage(X,X_dec)
+decode_success_ZF=verif_decodage(X,X_dec)
 end
 %%%%%%%%%%%%%%%%%%
 
 % MMSE %%%%%%%%%%%%%
 if MMSE==1
 [X_dec] = decode_MMSE(H, Y,sigma2)
-decode_success=verif_decodage(X,X_dec)
+decode_success_MMSE=verif_decodage(X,X_dec)
 end
 %%%%%%%%%%%%%%%%%%
 
 % SIC %%%%%%%%%%%%%
 if SIC==1
 [X_dec] = decode_SIC(H, Y)
-decode_success=verif_decodage(X,X_dec)
+decode_success_SIC=verif_decodage(X,X_dec)
 end
 %%%%%%%%%%%%%%%%%%
 
