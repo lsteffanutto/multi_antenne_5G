@@ -31,6 +31,7 @@ Pe_min     = 1e-6; % Pe min
 
 EbN0dB = EbN0dB_min:EbN0dB_step:EbN0dB_max;     % Points de SNR à simuler en dB à simuler
 EbN0   = 10.^(EbN0dB/10); %variance du bruit
+% SNR=-10*log10(sigma2);
 sigma2 = 1./EbN0; % <= SNR défini dans cours : ICI ON FAIT VARIER LE SNR
 % -------------------------------------------------------------------------
 %% Construction de l'objet évaluant le TEB
@@ -54,7 +55,7 @@ ylabel('$P_{error}$','Interpreter', 'latex', 'FontSize',14)
 msg_format = '|   %7.2f  |   %9d   |  %9d | %2.2e |  %8.2f kO/s |   %8.2f kO/s |   %8.2f s |\n';
 
 fprintf(      '|------------|---------------|------------|----------|----------------|-----------------|--------------|\n')
-msg_header =  '|  Eb/N0 dB  |    Bit nbr    |  Bit err   |   TEB    |    Debit Tx    |     Debit Rx    | Tps restant  |\n';
+msg_header =  '|  Eb/N0 dB  |    X_tot      | X_dec_faux |   Pe     |    Debit Tx    |     Debit Rx    | Tps restant  |\n';
 fprintf(msg_header);
 fprintf(      '|------------|---------------|------------|----------|----------------|-----------------|--------------|\n')
 
@@ -122,8 +123,7 @@ for i_snr = 1:length(EbN0dB)   %<==== ON FAIT VARIER LES SNR
         
         % MMSE
         if MMSE==1
-            sigma2=0;
-            [X_dec] = decode_MMSE(H, Y, sigma2);
+            [X_dec] = decode_MMSE(H, Y, sigma2_temp);
         end
         % SIC
         if SIC==1
@@ -147,9 +147,10 @@ for i_snr = 1:length(EbN0dB)   %<==== ON FAIT VARIER LES SNR
         
         %Dans step mettre que des vecteurs colonne
         err_stat   = step(stat_erreur, X(:), rec_b(:)); % Comptage des erreurs binaires
-        
+
         err_stat(2) = nb_MDC_decode_faux_pour_SNR; %On remplace le nombre d'erreur observée par le nombre de mot de code FAUX decodé
-        % err_stat(3) = nb_MDC_envoye_pour_SNR %A METTRE !!!
+        err_stat(3) = nb_MDC_envoye_pour_SNR; %A METTRE !!!
+        err_stat(1)= err_stat(2)/err_stat(3);
         %% Affichage du résultat
         if mod(nb_MDC_envoye_pour_SNR,100) == 1
             msg = sprintf(msg_format,...
@@ -178,8 +179,12 @@ for i_snr = 1:length(EbN0dB)   %<==== ON FAIT VARIER LES SNR
     fprintf(reverseStr);
     msg_sz =  fprintf(msg);
     reverseStr = repmat(sprintf('\b'), 1, msg_sz);
-    
-    P_ERROR(i_snr) = nb_MDC_decode_faux_pour_SNR/nb_MDC_envoye_pour_SNR;    % => Pe= nb_MDC_decode_FAUX/nb_tot_MDC_envoye
+%     err_stat(2);
+%     err_stat(3);
+%     err_stat(1)=P_ERROR(i_snr);
+
+    P_ERROR(i_snr) = nb_MDC_decode_faux_pour_SNR/nb_MDC_envoye_pour_SNR; % => Pe= nb_MDC_decode_FAUX/nb_tot_MDC_envoye
+
     drawnow limitrate
     
     if err_stat(1) < Pe_min
@@ -192,7 +197,7 @@ fprintf('|------------|---------------|------------|----------|----------------|
 %%
 figure(1)
 % semilogy(EbN0dB,P_ERROR);
-semilogy(EbN0dB,P_ERROR);
+semilogy(EbN0dB,P_ERROR,'LineWidth',1);
 hold all
 xlim([0 10])
 ylim([1e-6 1])
@@ -201,13 +206,27 @@ xlabel('$\frac{E_b}{N_0}$ en dB','Interpreter', 'latex', 'FontSize',14)
 ylabel('$P_{error}$','Interpreter', 'latex', 'FontSize',14)
 title("Pe par decodeur avec M="+M+"; N="+N+"; L="+L);
 
-save('ML','EbN0dB','P_ERROR')
+
+
 
 % EbN0dB = EbN0dB_min:EbN0dB_step:EbN0dB_max;     % Points de SNR à simuler en dB à simuler
 % EbN0   = 10.^(EbN0dB/10); %variance du bruit
 % sigma2 = 1./EbN0;
 
+if ML==1
+   simulation_name='ML' 
+end
+if ZF==1
+   simulation_name='ZF' 
+end
+if MMSE==1
+   simulation_name='MMSE' 
+end
+if SIC==1
+   simulation_name='SIC' 
+end
 
+save('ML','EbN0dB','P_ERROR','M','N','L');
 
 
 
