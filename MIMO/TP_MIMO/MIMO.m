@@ -6,8 +6,9 @@ N=2; %Nombre d'antennes d'émission
 L=1; %Nombre de symboles transmis
 
 ML=0;
-ZF=1;
+ZF=0;
 MMSE=0;
+SIC=1;
 
 sigma2=0;
 SNR=1/sigma2;
@@ -49,7 +50,14 @@ end
 
 % MMSE %%%%%%%%%%%%%
 if MMSE==1
-[X_dec] = decode_MMSE(H, Y)
+[X_dec] = decode_MMSE(H, Y,sigma2)
+decode_success=verif_decodage(X,X_dec)
+end
+%%%%%%%%%%%%%%%%%%
+
+% SIC %%%%%%%%%%%%%
+if SIC==1
+[X_dec] = decode_SIC(H, Y)
 decode_success=verif_decodage(X,X_dec)
 end
 %%%%%%%%%%%%%%%%%%

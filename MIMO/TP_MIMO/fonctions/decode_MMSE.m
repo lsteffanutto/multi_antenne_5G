@@ -1,12 +1,19 @@
-function [X_res] = decode_ZF(H, Y)
-% décode ZF
+function [X_res] = decode_MMSE(H, Y, sigma2)
+% décode MMSE (sigma2=0 on doit retrouver ZF)
 
+[M,N]=size(H);
 % 1. Trouver pseudo_inverse_H
 [H_pseudo,matrice_ok] = pseudo_inverse(H); %[U,S,V] = svd(H) et H = V*S^-1*U' => F_zf*=H+
 
-% 2.On a F*_ZF et Z
-F_etoile_ZF=H_pseudo;   %F_ZF = (H*)+ = (H+)* => F_etoile_ZF = H+;
-Z = H_pseudo*Y;          %On retrouve bien Z = H_pseudo*Y = X+F_etoile_ZF*V
+%QPSK => Q=Id
+Q=eye(M);
+
+%F_MMSE = (HQH'+sigma2)^-1*H*Q;
+F_MMSE = ((H*Q*H'+sigma2)^-1)*H*Q; 
+
+% PUIS MEME CHOSE QUE POUR ZF
+Z = F_MMSE'*Y; 
+
 [N,L]=size(Z);
 [M,~]=size(Y);
 % 3. On décode symbole par symbole
@@ -39,7 +46,6 @@ for j=1:length(Z_a_decode)
     
     X_res(j)=alphabet_QPSK(index_dec); %on récupère comme décision, le symbole QPSK qui minimise cette différence
 end
-
 
 
 

@@ -1,4 +1,4 @@
-clear all; close all; clc; beep off;
+clear all; clc; beep off;
 
 
 %% Parametres
@@ -12,6 +12,11 @@ R=1;
 % pqt_par_trame = 1; % Nombre de paquets par trame
 % K = pqt_par_trame*bit_par_pqt; % Nombre de bits de message par trame
 % N = K/R; % Nombre de bits codés par trame (codée)
+
+ML=0; %the best
+ZF=0;   %moins bon
+MMSE=0; %même que ZF si sigma2=0 comme je lui ai mis en parametre pour test
+SIC=1;  %meilleur si SNR bon
 
 M_code = 4; % Modulation BPSK <=> 2 symboles
 phi0 = 0; % Offset de phase our la BPSK
@@ -113,7 +118,7 @@ for i_snr = 1:length(EbN0dB)
 
         X = reshape(symboles_x_all,N,L); % [NxL] %Mot de code avec les symboles répartis verticalement
         %krari c'est encodé verticale à la V-BLAST
-        
+        X=complex(X);
         T_tx   = T_tx+toc(tx_tic);    % Mesure du débit d'encodage
         
         %% Canal
@@ -131,14 +136,26 @@ for i_snr = 1:length(EbN0dB)
         rx_tic = tic;                  % Mesure du débit de décodage
 
         %Mon decodeur fait tout: demodulation et decision il parle 0 chinois
-        
         % ML
-%         rec_b=decode_ML(Y,H,X);
-%         rec_b = decode_ML_mieux(Y,H,X); % !!! Marche pour toute taille de L, même L=1 !!!
-        
+        %rec_b=decode_ML(Y,H,X);
+        if ML==1
+            [X_dec] = decode_ML_mieux(Y,H,X); % !!! Marche pour toute taille de L, même L=1 !!!
+        end
         % ZF
-        [X_dec] = decode_ZF(H, Y);
-
+        if ZF==1
+            [X_dec] = decode_ZF(H, Y);
+        end
+        
+        % MMSE
+        if MMSE==1
+            sigma2=0;
+            [X_dec] = decode_MMSE(H, Y, sigma2);
+        end
+        % SIC
+        if SIC==1
+            [X_dec] = decode_SIC(H, Y);
+        end
+        
         rec_b=complex(X_dec); %pcq des fois en décodant mal il oublie de préciser partie imaginaire nulle
         
         if verif==1
