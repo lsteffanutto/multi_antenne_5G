@@ -5,10 +5,12 @@ clear all; clc; beep off;
 %% Parametres
 % -------------------------------------------------------------------------
 
+ALAMOUTI=1;
+V_BLAST=0;
 
-M=2; %Nombre d'antennes de réception
+M=4; %Nombre d'antennes de réception
 N=2; %Nombre d'antennes d'émission
-L=1; %Nombre de symboles transmis
+L=2; %Nombre de symboles transmis
 
 % Channel Matrix deterministe
 H = randn(M,N) + 1i*randn(M,N); % [MxN] % Constante, contient les h_m_n = gain complexe entre n_eme antenne emission et m_eme antenne reception
@@ -87,13 +89,29 @@ for i_snr = 1:length(EbN0dB)   %<==== ON FAIT VARIER LES SNR
         tx_tic = tic; % Mesure du débit d'encodage
         
         % Génération des symboles QPSK
-        symboles_x_all = randi([0 1], 1, N*L) + 1i * randi([0 1], 1, N*L); %2 symboles aléatoires déjà modulés par mes soins
+        if V_BLAST==1
+            %On les reshape verticalement à la V-BLAST (chaque antenne transmet un symbole)
+            symboles_x_all = randi([0 1], 1, N*L) + 1i * randi([0 1], 1, N*L);
+            X = reshape(symboles_x_all,N,L); % [NxL] %Mot de code avec les symboles répartis verticalement
+            X=complex(X);
+        end
         
         
-        % Encodage V-BLAST (~encodé verticale)
-        X = reshape(symboles_x_all,N,L); % [NxL] %Mot de code avec les symboles répartis verticalement
-        X=complex(X);
-        
+%         symboles_x_all = randi([0 1], 1, N*L) + 1i * randi([0 1], 1, N*L); %2 symboles aléatoires déjà modulés par mes soins
+%         % Encodage V-BLAST (~encodé verticale)
+%         X = reshape(symboles_x_all,N,L); % [NxL] %Mot de code avec les symboles répartis verticalement
+%         X=complex(X);
+         
+        if ALAMOUTI==1
+            symboles_x_all= randi([0 1], N, 1) + 1i * randi([0 1], N, 1);
+            x_1_2 = (-symboles_x_all(2))';   % x_2_1=-x_1_2' => x_1_2=-(x_2_1)'
+        %     x_1_2 = complex(-(symboles_x_all(2)'));   % x_2_1=-x_1_2' => x_1_2=-(x_2_1)'
+
+            x_2_2 = symboles_x_all(1)';      % x_1_1=x_2_2' => x_2_2=x_1_1'
+            alam = [x_1_2 ; x_2_2];
+            X = [symboles_x_all,alam];
+            X=complex(X);
+        end
         
         T_tx   = T_tx+toc(tx_tic);    % Mesure du débit d'encodage
         
@@ -111,11 +129,19 @@ for i_snr = 1:length(EbN0dB)   %<==== ON FAIT VARIER LES SNR
         rx_tic = tic;                  % Mesure du débit de décodage
 
         %Mon decodeur fait tout: demodulation et decision il parle 0 chinois
+        
         % ML
         %rec_b=decode_ML(Y,H,X);
-        if ML==1
-            [X_dec] = decode_ML_mieux(Y,H,X); % !!! Marche pour toute taille de L, même L=1 !!!
+        if ML==1        
+            if ALAMOUTI ==1
+                [X_dec] = decode_ML_ALAMOUTI(Y,H);
+            else
+                % [X_dec] = decode_ML(Y,H,X);
+                [X_dec] = decode_ML_mieux(Y,H,X); % !!! Marche pour toute taille de L, même L=1 !!!
+                %Verif bon decodage
+            end
         end
+        
         % ZF
         if ZF==1
             [X_dec] = decode_ZF(H, Y);
@@ -125,6 +151,7 @@ for i_snr = 1:length(EbN0dB)   %<==== ON FAIT VARIER LES SNR
         if MMSE==1
             [X_dec] = decode_MMSE(H, Y, sigma2_temp);
         end
+        
         % SIC
         if SIC==1
             [X_dec] = decode_SIC(H, Y);
