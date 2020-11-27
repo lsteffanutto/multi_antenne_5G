@@ -5,10 +5,10 @@ clear all; clc; beep off;
 %% Parametres
 % -------------------------------------------------------------------------
 
-ALAMOUTI=1;
-V_BLAST=0;
+ALAMOUTI=0;
+V_BLAST=1;
 
-M=4; %Nombre d'antennes de réception
+M=8; %Nombre d'antennes de réception
 N=2; %Nombre d'antennes d'émission
 L=2; %Nombre de symboles transmis
 
